@@ -2,6 +2,7 @@ package com.arespejel.pruebatecnica.controllers;
 
 import com.arespejel.pruebatecnica.models.Cargo;
 import com.arespejel.pruebatecnica.services.CargoService;
+import com.opencsv.exceptions.CsvValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,7 +23,8 @@ public class CargoController {
     private CargoService service;
 
     @GetMapping(path = "/{ruta}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Cargo>> carga(@PathVariable String ruta) throws IOException {
-            return ResponseEntity.status(HttpStatus.OK).body(service.carga(ruta));
+    public ResponseEntity<Void> carga(@PathVariable String ruta) throws IOException, CsvValidationException {
+        service.carga(ruta);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

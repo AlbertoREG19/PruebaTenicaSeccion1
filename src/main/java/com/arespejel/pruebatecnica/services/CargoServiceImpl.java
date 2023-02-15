@@ -1,47 +1,84 @@
 package com.arespejel.pruebatecnica.services;
 
 import com.arespejel.pruebatecnica.models.Cargo;
+import com.arespejel.pruebatecnica.models.Companies;
 import com.arespejel.pruebatecnica.repository.CargoRepository;
+import com.arespejel.pruebatecnica.repository.CompaniesRepository;
+import com.arespejel.pruebatecnica.services.Utils.Fechas;
+import com.arespejel.pruebatecnica.services.Utils.SaveCompanies;
+import com.opencsv.exceptions.CsvValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
-public class CargoServiceImpl implements CargoService{
+public class CargoServiceImpl implements CargoService {
 
     @Autowired
-    private CargoRepository repository;
+    private CargoRepository cargoRepository;
+
+    @Autowired
+    private CompaniesRepository companiesRepository;
 
     @Override
-    public List<Cargo> carga(String ruta) throws IOException {
-        FileReader archivo = new FileReader(ruta);
-        Cargo cargo = new Cargo();
+    public void carga(String ruta) throws IOException, CsvValidationException {
+        Stream<String[]> lines = new BufferedReader(new FileReader(ruta)).lines().skip(1).map(line -> line.split(","));
 
-        BufferedReader reader = new BufferedReader(new FileReader(ruta));
-        String lines = reader.lines().skip(1).collect(Collectors.joining("\n"));
-        String [] rows = lines.split("\n");
+        Cargo carga = new Cargo();
+        Companies com = new Companies();
+        lines.forEach(line -> {
+            if (line.length >= 6) {
+                SaveCompanies.saveCompanies(companiesRepository, line[2], line[1], Fechas.fecha(line[5]));
 
-        Arrays.stream(rows).forEach(row -> {
-            String[] data = row.split(",");
-            cargo.setId(data[0]);
-            cargo.setCompanyName(data[1]);
-            cargo.setCompanyId(data[2]);
-            cargo.setAmount(new BigDecimal(data[3]));
-            cargo.setStatus(data[4]);
-            cargo.setCreatedAt(new Date(data[5]));
-            cargo.setUpdatedAt(new Date(data[6]));
-
-            repository.save(cargo);
+                Optional<Cargo> optional = cargoRepository.findById(line[0]);
+                if (optional.isEmpty()) {
+                    carga.setId(line[0]);//0 id
+                    carga.setCompanyName(line[1]);//1 name
+                    carga.setCompanyId(line[2]);// 2 id
+                    carga.setAmount(Double.parseDouble((line[3])));// 3 amount
+                    carga.setStatus(line[4]);//4 status
+                    carga.setCreatedAt(Fechas.fecha(line[5]));//
+                    if (line.length >= 7) {
+                        carga.setUpdatedAt(Fechas.fecha(line[6]));
+                        cargoRepository.save(carga);
+                    } else {
+                        cargoRepository.save(carga);
+                    }
+                }
+            }
         });
-        reader.close();
-        return (List<Cargo>) repository.findAll();
-
-
     }
 }
+/*com.setId(line[2]);
+        com.setCompanyName(line[1]);
+        com.setCreatedAt(Fechas.fecha(line[5]));
+        companiesRepository.save(com);
+
+        com.setId(line[2]);
+        com.setCompanyName(line[1]);
+        com.setCreatedAt(Fechas.fecha(line[5]));
+        companiesRepository.save(com);
+
+
+
+        else if(line.length>=7){
+                    carga.setId(line[0]);//0 id
+                    carga.setCompanyName(line[1]);//1 name
+                    carga.setCompanyId(line[2]);// 2 id
+                    carga.setAmount(new BigDecimal(line[3]));// 3 amount
+                    carga.setStatus(line[4]);//4 status
+                    carga.setCreatedAt(Fechas.fecha(line[5]));//
+                carga.setUpdatedAt(Fechas.fecha(line[6]));
+
+                    repository.save(carga);
+                }
+
+
+
+
+
+        */

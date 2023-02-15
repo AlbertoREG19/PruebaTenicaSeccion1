@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "cargo")
+@Table(name = "charges")
 public class Cargo {
 
     @Id
@@ -20,15 +20,15 @@ public class Cargo {
     @Column(name = "company_id")
     private String companyId;
 
-    private BigDecimal amount;
+    private Double amount;
 
     private String status;
 
     @Column(name="created_at")
-    @Temporal(TemporalType.DATE)
-    private Date createdAt;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Timestamp createdAt;
 
     @Column(name="updated_at")
     @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
+    private Timestamp updatedAt;
 }
